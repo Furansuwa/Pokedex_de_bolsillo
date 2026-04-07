@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokedex de bolsillo del lado del Cliente</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .container { background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 500px; width: 100%; text-align: center; }
+        input { padding: 10px; width: 60%; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
+        button { padding: 10px 20px; background-color: #e3350d; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-left: 10px; }
+        button:hover { background-color: #c22b09; }
+        .resultado-ui { margin-top: 20px; display: none; padding: 20px; border: 2px solid #e3350d; border-radius: 10px; }
+        .resultado-ui img { width: 150px; height: 150px; }
+        .json-box { margin-top: 20px; background-color: #282c34; color: #abb2bf; padding: 15px; border-radius: 5px; text-align: left; overflow-x: auto; display: none; }
+        h1 { color: #333; }
+        .error { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Buscador de Poder Pokémon</h1>
+        <p>Introduce un Pokémon para calcular su poder total:</p>
+        
+        <div>
+            <input type="text" id="pokemonInput" placeholder="Ej. pikachu, lucario, gengar">
+            <button onclick="buscarPokemon()">Buscar</button>
+        </div>
+
+        <p id="mensajeError" class="error"></p>
+
+        <div id="vistaUsuario" class="resultado-ui">
+            <h2 id="uiNombre">Nombre</h2>
+            <img id="uiImagen" src="" alt="Imagen del Pokemon">
+            <h3 style="color: #e3350d;">Poder Total: <span id="uiPoder">0</span></h3>
+            <p id="uiMensaje">Mensaje...</p>
+        </div>
+
+        <h3 style="margin-top: 30px; text-align: left;">Respuesta del Servidor (JSON):</h3>
+        <pre id="vistaJson" class="json-box"></pre>
+    </div>
+
+    <script>
+        function buscarPokemon() {
+            const nombre = document.getElementById('pokemonInput').value.trim();
+            const url_tu_api = `http://127.0.0.1:8000/api/poder/${nombre}/`;
+            
+            // Ocultamos vistas previas
+            document.getElementById('vistaUsuario').style.display = 'none';
+            document.getElementById('vistaJson').style.display = 'none';
+            document.getElementById('mensajeError').innerText = 'Buscando...';
+
+            // Aqui se utilizo fetch para consumir mi propio WS
+            fetch(url_tu_api)
+                .then(respuesta => {
+                    if (!respuesta.ok) {
+                        throw new Error("Pokémon no encontrado");
+                    }
+                    return respuesta.json(); // Convertimos la respuesta a JSON
+                })
+                .then(datos => {
+                    document.getElementById('mensajeError').innerText = '';
+
+                    // Luego de procesar el Json haciendo uso de DOM se asigna cada valor del Json a su etiqueta HTML.
+                    document.getElementById('uiNombre').innerText = datos.nombre + " (" + datos.tipo_principal + ")";
+                    document.getElementById('uiImagen').src = datos.imagen;
+                    document.getElementById('uiPoder').innerText = datos.nivel_de_poder_total;
+                    document.getElementById('uiMensaje').innerText = datos.mensaje;
+                    document.getElementById('vistaUsuario').style.display = 'block';
+
+                    // 3. MOSTRAMOS EL JSON CRUDO PARA TU DEMOSTRACIÓN TÉCNICA
+                    document.getElementById('vistaJson').innerText = JSON.stringify(datos, null, 4);
+                    document.getElementById('vistaJson').style.display = 'block';
+                })
+                .catch(error => {
+                    document.getElementById('mensajeError').innerText = "Error: " + error.message;
+                    document.getElementById('vistaJson').innerText = '{"error": "Pokémon no encontrado"}';
+                    document.getElementById('vistaJson').style.display = 'block';
+                });
+        }
+    </script>
+</body>
+</html>
