@@ -42,3 +42,5 @@ python manage.py migrate
 
 # 5. Enciende el servidor local
 python manage.py runserver
+```
+## El front no requiere ningun tipo de instalacion, solo buscas el archivo llamado index.html y lo abres en tu navegador.
